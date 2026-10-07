@@ -9,7 +9,6 @@ from lib.command_handler import (
 )
 
 
-
 if __name__ == "__main__":
     dollarxan = (
         ApplicationBuilder()
