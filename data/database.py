@@ -1,5 +1,6 @@
 from data.db_connection import MongoDBConnection
 from data.db_manager import MongoDBManager
+from datetime import datetime, timezone, timedelta
 
 
 class Database:
@@ -19,12 +20,25 @@ class Database:
         else:
             self.manager = Database.manager
 
-    def close(self):
-        self.connection.disconnect()
-
     def user_exist(self, id) -> bool:
         assert self.manager is not None
         if self.manager.find("user", {"user_id": id}):
             return True
         else:
             return False
+
+
+    def time_isverify(self, id: int, limit: int) -> tuple[bool, int]:
+        assert self.manager is not None
+
+        date: datetime = self.manager.find("user", {"user_id": id}, {"last_dollar_gen_date": 1})[0]["last_dollar_gen_date"] # type: ignore
+        date = date.replace(tzinfo=timezone.utc)
+
+        waitinh_time: timedelta = timedelta(minutes=limit) - (datetime.now(timezone.utc) - date)
+
+        return (datetime.now(timezone.utc) - date > timedelta(minutes=limit), waitinh_time.seconds)
+        
+
+    def close(self):
+        self.connection.disconnect()
+
