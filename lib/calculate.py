@@ -8,7 +8,7 @@ def add_dollar(user_id: int, fname: str|None, lname: str|None, date: datetime|No
     db = Database()
     if db.manager is not None:
         if db.user_exist(user_id):
-            isverify, wait= db.time_isverify(user_id, 1)
+            isverify, wait= db.time_isverify(user_id, 90)
             if isverify:
                 db.manager.update("user", {"user_id": user_id}, {"$inc": {"dollar": 3}, "$set": {"last_dollar_gen_date": date}})
             else:
