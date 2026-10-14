@@ -5,7 +5,6 @@ from telegram import (
 )
 from telegram.ext import (
     ContextTypes,
-    CallbackQueryHandler,
 )
 from lib.calculate import add_dollar, get_dollar
 
@@ -65,19 +64,26 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                     await context.bot.edit_message_text(
                         chat_id=update.callback_query.message.chat.id,
                         message_id=update.callback_query.message.message_id,
-                        text=f"{waiting_time}\nصبر کنید",
+                        text=f"❌\nدلارخان سرش شولوغه\n{waiting_time}ثانیه صبر کنید",
                     )
                 else:
                     dollars = get_dollar(update.callback_query.from_user.id)
                     await context.bot.edit_message_text(
                         chat_id=update.callback_query.message.chat.id,
                         message_id=update.callback_query.message.message_id,
-                        text=f"دلارهایت +3\nموجودیت:\n{dollars}$",
+                        text=f"✅\nدلارهایت +3\nموجودی:\n{dollars} $",
                     )
 
         elif update.callback_query.data == "my_dollars":
-            # TODO
-            pass
+            if update.callback_query.message is not None:
+
+                dollars = get_dollar(update.callback_query.from_user.id)
+                await context.bot.edit_message_text(
+                    chat_id=update.callback_query.message.chat.id,
+                    message_id=update.callback_query.message.message_id,
+                    text=f"موجودی:\n{dollars} $",
+                )
+        
         elif update.callback_query.data == "dollar_game":
             # TODO
             pass
@@ -89,10 +95,6 @@ async def generate_dollar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE
     if update.message is not None:
         if update.message.from_user is not None:
 
-            # print(update.message.date)
-            # print("*********************")
-            # print(update.message)
-
             waiting_time = add_dollar(
                 update.message.from_user.id,
                 update.message.from_user.first_name,
@@ -103,12 +105,43 @@ async def generate_dollar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE
                 await context.bot.send_message(
                     chat_id=update.message.chat.id,
                     reply_to_message_id=update.message.id,
-                    text=f"دلارخان سرش شولوغه\n{waiting_time}ثانیه صبر کنید",
+                    text=f"❌\nدلارخان سرش شولوغه\n{waiting_time}ثانیه صبر کنید",
                 )
             else:
                 dollars = get_dollar(update.message.from_user.id)
                 await context.bot.send_message(
                     chat_id=update.message.chat.id,
-                    text=f"دلارهایت +3\nو موجودیت:\n{dollars}$",
+                    text=f"✅\nدلارهایت +3\nموجودی:\n{dollars} $",
                     reply_to_message_id=update.message.id,
                 )
+    return None
+
+
+async def get_dollar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is not None:
+        if update.message.from_user is not None:
+            dollars = get_dollar(update.message.from_user.id)
+            await context.bot.send_message(
+                chat_id=update.message.chat.id,
+                text=f"موجودی:\n{dollars} $",
+                reply_to_message_id=update.message.id,
+            )
+
+
+async def say_goodnight_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is not None:
+        if update.message.from_user is not None:
+            if update.message.from_user.id == 1929186744:
+                await context.bot.send_message(
+                    chat_id=update.message.chat.id,
+                    reply_to_message_id=update.message.id,
+                    text=f"شبت بخیر✨\nخوابای خوب ببینی عچقم💫",
+                )
+            else:
+                await context.bot.send_message(
+                    chat_id=update.message.chat.id,
+                    reply_to_message_id=update.message.id,
+                    text=f"فکر کردی کی هستی\nفقط به عشقم میگم شب بخیر\n🙂‍↔️🙂‍↔️🙂‍↔️",
+                )
+        
+        return None

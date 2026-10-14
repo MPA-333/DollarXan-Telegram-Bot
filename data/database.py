@@ -41,4 +41,3 @@ class Database:
 
     def close(self):
         self.connection.disconnect()
-
