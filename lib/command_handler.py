@@ -6,52 +6,12 @@ from telegram import (
 from telegram.ext import (
     ContextTypes,
 )
-from lib.calculate import add_dollar, get_dollar
+from lib.calculator import add_dollar, get_dollar
 
 
-async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    
-    if update.message is None:
-        return None
-    else:
-        await context.bot.send_message(
-            chat_id=update.message.chat.id,
-            text="ربات روشنه\nاگه نمیدونی چطور ازش استفاده کنی بزن /help",
-            reply_to_message_id=update.message.message_id,
-        )
-        return None
-
-
-async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-
-    if update.callback_query is None:
-        if update.message is not None:
-            await context.bot.send_message(
-                chat_id=update.message.chat.id,
-                text="این ربات دلار تولید میکند\nشما میتوانید دلار تولید کنید با تایپ کردن 'دلار' , 'پول'\nبرای مشاهده موجودی، تایپ کنید 'دلارهام'\nبرای بازی کردن هم تایپ کنید 'دلاربازی'",
-                reply_to_message_id=update.message.message_id,
-                reply_markup=InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(
-                                text="دلار", callback_data="generate_dollar"
-                            ),
-                            InlineKeyboardButton(
-                                text="دلارهایم", callback_data="my_dollars"
-                            ),
-                        ],
-                        [
-                            InlineKeyboardButton(
-                                text="دلاربازی", callback_data="dollar_game"
-                            )
-                        ],
-                    ]
-                ),
-            )
-            return None
-        
-    else:
-        if update.callback_query.data == "generate_dollar":
+async def query_handler_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.callback_query is not None:
+        if update.callback_query.data == "generate_dollars":
             if update.callback_query.message is not None:
 
                 waiting_time = add_dollar(
@@ -84,10 +44,53 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                     text=f"موجودی:\n{dollars} $",
                 )
         
-        elif update.callback_query.data == "dollar_game":
-            # TODO
-            pass
+        elif update.callback_query.data == "game_dollars":
+            if update.callback_query.message is not None:
+                await context.bot.edit_message_text(
+                    chat_id=update.callback_query.message.chat.id,
+                    message_id=update.callback_query.message.message_id,
+                    text="تایپ کنید 'دلاربازی' تا بازی شروع شود",
+                )
+
+
+async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    
+    if update.message is None:
         return None
+    else:
+        await context.bot.send_message(
+            chat_id=update.message.chat.id,
+            text="ربات روشنه\nاگه نمیدونی چطور ازش استفاده کنی بزن /help",
+            reply_to_message_id=update.message.message_id,
+        )
+        return None
+
+
+async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is not None:
+        await context.bot.send_message(
+            chat_id=update.message.chat.id,
+            text="این ربات دلار تولید میکند\nشما میتوانید دلار تولید کنید با تایپ کردن 'دلار' , 'پول'\nبرای مشاهده موجودی، تایپ کنید 'دلارهام'\nبرای بازی کردن هم تایپ کنید 'دلاربازی'",
+            reply_to_message_id=update.message.message_id,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            text="دلار", callback_data="generate_dollars"
+                        ),
+                        InlineKeyboardButton(
+                            text="دلارهایم", callback_data="my_dollars"
+                        ),
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="دلاربازی", callback_data="game_dollars"
+                        )
+                    ],
+                ]
+            ),
+        )
+        return None       
 
 
 async def generate_dollar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
