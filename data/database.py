@@ -20,7 +20,16 @@ class Database:
         else:
             self.manager = Database.manager
 
-    def user_exist(self, id) -> bool:
+    def user_exist(self, id: int) -> bool:
+        """in tabe id user ra migirad agar dakhel paygahdade bud True
+        barmigardanad dar gheyr in surat False
+
+        Args:
+            id (int): id user mored nazar
+
+        Returns:
+            bool: agar True bargardanad yani karbar mojud ast.
+        """
         assert self.manager is not None
         if self.manager.find("user", {"user_id": id}):
             return True
@@ -29,6 +38,18 @@ class Database:
 
 
     def time_isverify(self, id: int, limit: int) -> tuple[bool, int]:
+        """in tabe tarikh akharin payam ezafe shodan dollar braye karbar ra az paygah dade mikhanad.
+        ba limit dade shode mogayese mikonad. agar zaman entezar tamam shode bud True va zaman entezar lazem ra
+        barmigardanad ke ye adad manfi khahad bud.
+
+        Args:
+            id (int): id user mored nazar
+            limit (int): moddat zaman mored entezar braye gozasht az akharin update (second)
+
+        Returns:
+            tuple[bool, int]: yek tuple ke ozv avval agar True bashad yani karbar zaman entezar ra pass karde.
+            ozv dovvom second lazem braye entezar ast ke vagti ozv avval False bashad mani dar khahad bud.
+        """
         assert self.manager is not None
 
         date: datetime = self.manager.find("user", {"user_id": id}, {"last_dollar_gen_date": 1})[0]["last_dollar_gen_date"] # type: ignore

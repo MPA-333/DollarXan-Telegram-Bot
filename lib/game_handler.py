@@ -6,6 +6,7 @@ from telegram import (
 from telegram.ext import (
     ContextTypes,
 )
+from lib.calculator import get_dollar
 from uuid import uuid4
 import re
 
@@ -61,9 +62,9 @@ class Game:
 
 async def expire_game(context: ContextTypes.DEFAULT_TYPE):
     if context.job:
-        id = context.job.data.get("game_id") # type: ignore
-        chat_id = context.job.data.get("chat_id") # type: ignore
-        message_id = context.job.data.get("message_id") # type: ignore
+        id = context.job.data.get("game_id")  # type: ignore
+        chat_id = context.job.data.get("chat_id")  # type: ignore
+        message_id = context.job.data.get("message_id")  # type: ignore
 
         if id in context.application.bot_data.keys():
             context.application.bot_data.pop(id)
@@ -77,9 +78,6 @@ async def expire_game(context: ContextTypes.DEFAULT_TYPE):
                 pass
         else:
             print(f"Not Found\ngame with id {id} not found :(")
-   
-
-        
 
 
 async def initialize_game(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -106,8 +104,16 @@ async def initialize_game(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                     text="لطفا بازی مورد نظر خود را انتخاب کنید\nفعلا فقط یک بازی داریم",
                     reply_markup=InlineKeyboardMarkup(
                         [
-                            [InlineKeyboardButton(text="🎲", callback_data="dice_game")],
-                            [InlineKeyboardButton(text="❌", callback_data="cancel_game")],
+                            [
+                                InlineKeyboardButton(
+                                    text="🎲", callback_data="dice_game"
+                                )
+                            ],
+                            [
+                                InlineKeyboardButton(
+                                    text="❌", callback_data="cancel_game"
+                                )
+                            ],
                         ]
                     ),
                 )
@@ -122,7 +128,7 @@ async def initialize_game(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                         "message_id": sent_message.message_id,
                     },
                     name=f"expire game of user {update.message.from_user.id}",
-                    user_id=update.message.from_user.id
+                    user_id=update.message.from_user.id,
                 )
 
                 game.main_message_id = sent_message.message_id
@@ -137,7 +143,6 @@ async def initialize_game(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                     reply_to_message_id=update.message.id,
                     text="به دلارخان استراحت بده\nپس لطفا چند دقیقه بعد امتحان کن",
                 )
-
 
 
 async def game_query_handler(
@@ -157,16 +162,24 @@ async def game_query_handler(
                         game.status = Game.STATUS[2]
                         print("game id (set step): ", game.id)
                         print("main message id (use step): ", game.main_message_id)
-                        print("main message id (update method): ", update.callback_query.message.message_id)
+                        print(
+                            "main message id (update method): ",
+                            update.callback_query.message.message_id,
+                        )
                         print("################")
-
 
                         await context.bot.edit_message_text(
                             chat_id=game.main_chat_id,
                             message_id=game.main_message_id,
                             text="لطفا مبلغ ورودی را تعیین کنید\n(به عنوان پاسخ این پیام ریپلای کنید)",
                             reply_markup=InlineKeyboardMarkup(
-                                [[InlineKeyboardButton(text="❌", callback_data="cancel_game")]]
+                                [
+                                    [
+                                        InlineKeyboardButton(
+                                            text="❌", callback_data="cancel_game"
+                                        )
+                                    ]
+                                ]
                             ),
                         )
 
@@ -183,9 +196,11 @@ async def game_query_handler(
                         game.status = Game.STATUS[7]
                         print("game id (set step): ", game.id)
                         print("main message id (cancel step): ", game.main_message_id)
-                        print("main message id (update method): ", update.callback_query.message.message_id)
+                        print(
+                            "main message id (update method): ",
+                            update.callback_query.message.message_id,
+                        )
                         print("################")
-
 
                         await context.bot.edit_message_text(
                             chat_id=game.main_chat_id,
@@ -193,33 +208,101 @@ async def game_query_handler(
                             text="بازی کنسل شد",
                         )
 
+        elif update.callback_query.data == "one_player_game":
+            game = context.application.bot_data.get(update.callback_query.from_user.id)
+            if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
+                print("1 player mod activated")
+
+        elif update.callback_query.data == "two_player_game":
+            game = context.application.bot_data.get(update.callback_query.from_user.id)
+            if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
+                print("2 player mod activated")
+
+        elif update.callback_query.data == "three_player_game":
+            game = context.application.bot_data.get(update.callback_query.from_user.id)
+            if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
+                print("3 player mod activated")
+
+
 
 async def choose_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # print("CHOOSE PRICE Entierd")
+    print("CHOOSE PRICE Entierd")
 
     if update.message:
-        # print("update.message is OK")
+        print("update.message is OK")
 
         if update.message.from_user:
-            # print("update.message.from_user is OK")
+            print("update.message.from_user is OK")
 
             game = context.application.bot_data.get(update.message.from_user.id)
 
-            if game and game.creator_id == update.message.from_user.id and game.status == Game.STATUS[2] and update.message.reply_to_message:
+            if (
+                game
+                and game.creator_id == update.message.from_user.id
+                and game.status == Game.STATUS[2]
+                and update.message.reply_to_message
+            ):
                 if update.message.text:
                     value = await verify_user_value(update.message.text)
+                    print("returned value is:", value)
+                    print(update.message.text)
                     if value:
-                        # TODO
-                        pass
-                    # print("returned value is:", value)
-                    # print(update.message.text)
+                        user_dollar = get_dollar(game.creator_id)
+                        if user_dollar and value <= user_dollar:
+                            game.entry_fee = value
+                            game.status = Game.STATUS[3]
+                            await context.bot.edit_message_text(
+                                chat_id=game.main_chat_id,
+                                message_id=game.main_message_id,
+                                text="لطفا تعداد بازیکن ها را تعیین کنید\n(یکی از اعداد زیر را انتخاب کنید)",
+                                reply_markup=InlineKeyboardMarkup(
+                                    [
+                                        [
+                                            InlineKeyboardButton(
+                                                text="1",
+                                                callback_data="one_player_game",
+                                            ),
+                                            InlineKeyboardButton(
+                                                text="2",
+                                                callback_data="two_player_game",
+                                            ),
+                                            InlineKeyboardButton(
+                                                text="3",
+                                                callback_data="three_player_game",
+                                            ),
+                                        ],
+                                        [
+                                            InlineKeyboardButton(
+                                                text="❌", callback_data="cancel_game"
+                                            )
+                                        ],
+                                    ]
+                                ),
+                            )
+
+                        else:
+                            print("You not have enough dollar")
+                            await context.bot.edit_message_text(
+                                chat_id=game.main_chat_id,
+                                message_id=game.main_message_id,
+                                text="مبلغ وارد شده از موجودی شما بیشتر است\nدوباره امتحان کنید",
+                                reply_markup=InlineKeyboardMarkup(
+                                    [
+                                        [
+                                            InlineKeyboardButton(
+                                                text="❌", callback_data="cancel_game"
+                                            )
+                                        ]
+                                    ]
+                                ),
+                            )
                 else:
                     print("message has no text :(")
 
 
-async def verify_user_value(text: str) -> int|None:
+async def verify_user_value(text: str) -> int | None:
     """in tabe reshte migirad va an ra be adad tabdil mokonad
-    reshte mitavanad 10k ya 10m bashad va moshabeh haye an 
+    reshte mitavanad 10k ya 10m bashad va moshabeh haye an
 
     Args:
         text (str): 1000 ya 1k ya ۱کا ya ...
@@ -227,13 +310,10 @@ async def verify_user_value(text: str) -> int|None:
     Returns:
         int|None: adad hasel az reshte ra midahad ya None midahad
     """
-    
+
     text = text.strip().lower()
 
-    translation_english = str.maketrans(
-        "۰۱۲۳۴۵۶۷۸۹",
-        "0123456789"
-    )
+    translation_english = str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789")
 
     text = text.translate(translation_english)
 
@@ -261,13 +341,10 @@ async def verify_user_value(text: str) -> int|None:
                 print("Error from input :(")
 
             return number
-        
+
         except:
             print("converted to int fail :(")
             return None
     else:
         print("Not Match :(")
         return None
-            
-
-
