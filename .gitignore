@@ -3,3 +3,6 @@
 
 # ignore pycache
 __pycache__
+
+# my secret password, token, id, ...
+secret_key.py

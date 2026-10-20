@@ -19,13 +19,14 @@ from lib.game_handler import (
     game_query_handler,
     choose_price,
 )
+from secret_key import BOT_TOKEN
 
 
 # =================================================================== #
 def main():
     dollarxan = (
         ApplicationBuilder()
-        .token("8700251942:AAGdoMOEKGWgbsJ8RlACsAqFa3tAy8DQcAU")
+        .token(BOT_TOKEN)
         .build()
     )
 

@@ -7,6 +7,7 @@ from telegram.ext import (
     ContextTypes,
 )
 from lib.calculator import add_dollar, get_dollar
+from secret_key import ADMIN_ID
 
 
 async def query_handler_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -134,7 +135,7 @@ async def get_dollar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 async def say_goodnight_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is not None:
         if update.message.from_user is not None:
-            if update.message.from_user.id == 1929186744:
+            if update.message.from_user.id == ADMIN_ID:
                 await context.bot.send_message(
                     chat_id=update.message.chat.id,
                     reply_to_message_id=update.message.id,
