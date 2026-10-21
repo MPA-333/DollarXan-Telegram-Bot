@@ -6,14 +6,15 @@ from telegram import (
 from telegram.ext import (
     ContextTypes,
 )
-from lib.calculator import get_dollar
+from lib.calculator import get_dollar, update_dollar
 from uuid import uuid4
 import re
 
 
 class Player:
-    def __init__(self, id, score, is_paid) -> None:
+    def __init__(self, id: int, name: str, score: int, is_paid: bool) -> None:
         self.id = id
+        self.name = name
         self.score = score
         self.is_paid = is_paid
 
@@ -39,6 +40,7 @@ class Game:
         game_message_id=0,
         user_message_id=0,
         creator_id=0,
+        creator_name="",
     ) -> None:
         self.id = uuid4()
         self.type = game_type
@@ -48,6 +50,7 @@ class Game:
         self.main_message_id = game_message_id
         self.user_message_id = user_message_id
         self.creator_id = creator_id
+        self.creator_name = creator_name
         self.players_data: list[Player] = []
         self.status = Game.STATUS[0]
 
@@ -89,6 +92,7 @@ async def initialize_game(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
                 game.status = Game.STATUS[1]
                 game.creator_id = update.message.from_user.id  # set creators id
+                game.creator_name = update.message.from_user.full_name
                 game.main_chat_id = update.message.chat.id
                 game.user_message_id = update.message.id
 
@@ -210,17 +214,108 @@ async def game_query_handler(
 
         elif update.callback_query.data == "one_player_game":
             game = context.application.bot_data.get(update.callback_query.from_user.id)
+
             if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
+                # game = Game() # WARNING
+
+                game.player_count = 1
+
+                # game.players_data = [Player(id=game.creator_id, score=0, is_paid=False)]
+
+                # if update_dollar(game.creator_id, game.entry_fee):
+                #     game.status = Game.STATUS[4]
+
                 print("1 player mod activated")
+
+
 
         elif update.callback_query.data == "two_player_game":
             game = context.application.bot_data.get(update.callback_query.from_user.id)
+
             if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
+                # game = Game()
+
+                
+                game.player_count = 2
+
+                #  PLAYER 1
+                player1 = Player(id=game.creator_id, name=game.creator_name, score=0, is_paid=False)
+                game.players_data.append(player1)
+
+                #  PLAYER 1
+                player2 = Player(id=12345678, name="Ali", score=0, is_paid=False)
+                game.players_data.append(player2)
+
+                # "{"+ f"player_{x+1}" + "}"
+                text_list: list[str] = [f"کاربر{x+1}: " + "{name}" + "\n" for x in range(game.player_count)]
+
+                text_template = "لطفا برای این که وارد بازی شوید\nروی شرکت کردن بزنید\n\n"
+
+                result: str = ""
+
+                for text in text_list:
+                    text_template += f"{text}"
+
+                for player in game.players_data:
+                    result = text_template.replace("{name}", player.name, 1)
+
+                if "{name}" in result:
+                    result = result.replace("{name}", " ")
+
+                
+
+                # i = 0
+                # for str_player in text_list:
+                #     text_template += f"{str_player}"
+
+                #     try:
+                #         if game.players_data[i]:
+                #             result = text_template.replace("{name}", game.players_data[i].name, 1)
+                #             print(game.players_data[i], i)
+                #             print(result)                            
+
+                #     except IndexError:
+                #         result = text_template.
+                #         print("Index Out of list range")
+                #     finally:
+                #         print("**\nI AM IN FINALLYYYYYYYYYYYYYYY\n**")
+                #         i += 1
+                    
+
+                if result == "":
+                    result = "لطفا برای این که وارد بازی شوید\nروی شرکت کردن بزنید\n\nمتاسفانه در گرفتن نام شرکت کنندگان مشکلی پیش آمد"
+                
+                await context.bot.edit_message_text(
+                    chat_id=game.main_chat_id,
+                    message_id=game.main_message_id,
+                    text=result,
+                    reply_markup=InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton(
+                                    text="🙋‍♂️شرکت میکنم🙋‍♂️", callback_data="join_game"
+                                )
+                            ],
+                            [
+                                InlineKeyboardButton(
+                                    text="❌", callback_data="cancel_game"
+                                )
+                            ]
+                        ]
+                    ),
+                )
+
                 print("2 player mod activated")
+
+
+
 
         elif update.callback_query.data == "three_player_game":
             game = context.application.bot_data.get(update.callback_query.from_user.id)
             if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
+                
+                game.player_count = 3
+                
                 print("3 player mod activated")
 
 

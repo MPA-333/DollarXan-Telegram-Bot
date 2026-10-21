@@ -51,3 +51,25 @@ def get_dollar(user_id: int) -> int | None:
         if db.user_exist(user_id):
             return db.manager.find("user", {"user_id": user_id}, {"dollar": 1})[0]["dollar"] # pyright: ignore[reportOptionalSubscript]
     return None
+
+
+def update_dollar(user_id: int, value: int) -> bool:
+    """in tabe ye megdar migirad va ba megdar dollar mojudi user jam mikonad.
+    agar manfi begirad kam mikonad. agar mosbat begirad ezafe mikonad.
+    dar akhar agar chizi ezafe ya kam shod True barmigardanad.
+
+    Args:
+        user_id (int): id user mored nazar
+        value (int): adad mored nazar braye jam shodan ba dollar haye karbar
+
+    Returns:
+        bool: agar taghiri da paygahdade anjam shod True barmigardanad. 
+    """
+    db = Database()
+    if db.manager is not None:
+        if db.user_exist(user_id):
+            result = db.manager.update("user", {"user_id": user_id}, {"$inc": {"dollar": value} })
+            if result:
+                print("your price is updated")
+                return True
+    return False
