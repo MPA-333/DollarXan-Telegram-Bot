@@ -18,6 +18,10 @@ class Player:
         self.score = score
         self.is_paid = is_paid
 
+    def __str__(self) -> str:
+        return f"{self.id}|{self.name}|{self.score}|"
+
+
 
 class Game:
     STATUS = {
@@ -25,7 +29,7 @@ class Game:
         1: "ChooseType",
         2: "ChooseFee",
         3: "ChoosePlayer",
-        4: "Start",
+        4: "Starting",
         5: "Running",
         6: "ChooseWinner",
         7: "End",
@@ -61,6 +65,9 @@ class Game:
 
     def __hash__(self) -> int:
         return hash(self.id)
+
+    def __str__(self) -> str:
+        return f"{self.creator_id}|{self.creator_name}|{self.status}|{self.player_count}"
 
 
 async def expire_game(context: ContextTypes.DEFAULT_TYPE):
@@ -215,109 +222,188 @@ async def game_query_handler(
         elif update.callback_query.data == "one_player_game":
             game = context.application.bot_data.get(update.callback_query.from_user.id)
 
-            if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
+            if (
+                game
+                and update.callback_query.from_user.id == game.creator_id
+                and game.status == Game.STATUS[3]
+            ):
                 # game = Game() # WARNING
 
                 game.player_count = 1
 
-                # game.players_data = [Player(id=game.creator_id, score=0, is_paid=False)]
+                # gablan mojudi in karbar check shode va bishtar az entry_fee ast.
+                if update_dollar(update.callback_query.from_user.id, -game.entry_fee):
+                    game.players_data.append(Player(id=game.creator_id, name=game.creator_name, score=0, is_paid=True))
+                    game.status = Game.STATUS[4]
+                else:
+                    print("update dollar Faild :(\t{1 player mod}")
 
-                # if update_dollar(game.creator_id, game.entry_fee):
-                #     game.status = Game.STATUS[4]
+                # player = Player(
+                #     id=game.creator_id, name=game.creator_name, score=0, is_paid=False
+                # )
+                # game.players_data.append(player)
 
                 print("1 player mod activated")
 
-
+                # TODO run game
+                # for run game click on start game
 
         elif update.callback_query.data == "two_player_game":
             game = context.application.bot_data.get(update.callback_query.from_user.id)
 
-            if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
-                # game = Game()
+            if (
+                game
+                and update.callback_query.from_user.id == game.creator_id
+                and game.status == Game.STATUS[3]
+            ):
+                # game = Game() # WARNING
 
-                
                 game.player_count = 2
 
-                #  PLAYER 1
-                player1 = Player(id=game.creator_id, name=game.creator_name, score=0, is_paid=False)
-                game.players_data.append(player1)
+                # gablan mojudi in karbar check shode va bishtar az entry_fee ast.
+                if update_dollar(update.callback_query.from_user.id, -game.entry_fee):
+                    game.players_data.append(Player(id=game.creator_id, name=game.creator_name, score=0, is_paid=True))
+                    game.status = Game.STATUS[4]
+                else:
+                    print("update dollar Faild :(\t{2 player mod}")
 
                 #  PLAYER 1
-                player2 = Player(id=12345678, name="Ali", score=0, is_paid=False)
-                game.players_data.append(player2)
+                # player1 = Player(
+                #     id=game.creator_id, name=game.creator_name, score=0, is_paid=False
+                # )
+                # game.players_data.append(player1)
 
+                #  PLAYER 2
+                # player2 = Player(id=12345678, name="Ali", score=0, is_paid=False)
+                # game.players_data.append(player2)
+
+                text = generate_text_for_join_user(game)
                 # "{"+ f"player_{x+1}" + "}"
-                text_list: list[str] = [f"کاربر{x+1}: " + "{name}" + "\n" for x in range(game.player_count)]
+                # text_list: list[str] = [f"کاربر{x+1}: " + "{"+ f"player_{x+1}" + "}" + "\n" for x in range(game.player_count)]
 
-                text_template = "لطفا برای این که وارد بازی شوید\nروی شرکت کردن بزنید\n\n"
+                # text_template = "لطفا برای این که وارد بازی شوید\nروی شرکت کردن بزنید\n\n"
 
-                result: str = ""
+                # result: str = ""
 
-                for text in text_list:
-                    text_template += f"{text}"
+                # for text in text_list:
+                # text_template += f"{text}"
 
-                for player in game.players_data:
-                    result = text_template.replace("{name}", player.name, 1)
+                # result = text_template
+                # for i, player in enumerate(game.players_data):
+                # print("index is: " + f"{i}")
+                # result = result.replace("{player_"+ f"{i+1}" + "}", player.name, 1)
+                # print("\n***\n"+ result + "\n***\n")
 
-                if "{name}" in result:
-                    result = result.replace("{name}", " ")
+                # print(r"\{player_\d\}")
 
-                
+                # find_text_list = re.findall(r"\{player_\d\}", result)
+                # if find_text_list:
+                # print(find_text_list)
+                # for item in find_text_list:
+                # result = result.replace(item, " ")
 
-                # i = 0
-                # for str_player in text_list:
-                #     text_template += f"{str_player}"
+                # if result == "":
+                # result = "لطفا برای این که وارد بازی شوید\nروی شرکت کردن بزنید\n\nمتاسفانه در گرفتن نام شرکت کنندگان مشکلی پیش آمد"
 
-                #     try:
-                #         if game.players_data[i]:
-                #             result = text_template.replace("{name}", game.players_data[i].name, 1)
-                #             print(game.players_data[i], i)
-                #             print(result)                            
-
-                #     except IndexError:
-                #         result = text_template.
-                #         print("Index Out of list range")
-                #     finally:
-                #         print("**\nI AM IN FINALLYYYYYYYYYYYYYYY\n**")
-                #         i += 1
-                    
-
-                if result == "":
-                    result = "لطفا برای این که وارد بازی شوید\nروی شرکت کردن بزنید\n\nمتاسفانه در گرفتن نام شرکت کنندگان مشکلی پیش آمد"
-                
                 await context.bot.edit_message_text(
                     chat_id=game.main_chat_id,
                     message_id=game.main_message_id,
-                    text=result,
+                    text=text,
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
                                 InlineKeyboardButton(
-                                    text="🙋‍♂️شرکت میکنم🙋‍♂️", callback_data="join_game"
+                                    text="🙋‍♂️شرکت میکنم🙋‍♂️",
+                                    callback_data=f"{game.creator_id}_join_game",
                                 )
                             ],
                             [
                                 InlineKeyboardButton(
                                     text="❌", callback_data="cancel_game"
                                 )
-                            ]
+                            ],
                         ]
                     ),
                 )
 
                 print("2 player mod activated")
 
-
-
-
         elif update.callback_query.data == "three_player_game":
             game = context.application.bot_data.get(update.callback_query.from_user.id)
-            if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
-                
+            if (
+                game
+                and update.callback_query.from_user.id == game.creator_id
+                and game.status == Game.STATUS[3]
+            ):
+
                 game.player_count = 3
-                
+
+                if update_dollar(update.callback_query.from_user.id, -game.entry_fee):
+                    game.players_data.append(Player(id=game.creator_id, name=game.creator_name, score=0, is_paid=True))
+                    game.status = Game.STATUS[4]
+                else:
+                    print("update dollar Faild :(\t{2 player mod}")
+
+                text = generate_text_for_join_user(game)
+                await context.bot.edit_message_text(
+                    chat_id=game.main_chat_id,
+                    message_id=game.main_message_id,
+                    text=text,
+                    reply_markup=InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton(
+                                    text="🙋‍♂️شرکت میکنم🙋‍♂️",
+                                    callback_data=f"{game.creator_id}_join_game",
+                                )
+                            ],
+                            [
+                                InlineKeyboardButton(
+                                    text="❌", callback_data="cancel_game"
+                                )
+                            ],
+                        ]
+                    ),
+                )
+
                 print("3 player mod activated")
 
+
+
+        elif update.callback_query.data and "_join_game" in update.callback_query.data:
+            # print("regex query Success")
+            # print(update.callback_query.data)
+
+            if update.callback_query.from_user:
+                game_creator_id = None
+
+                text: str = update.callback_query.data
+
+                id_and_text = re.fullmatch(r"^(\d+)_join_game$", text)
+
+                if id_and_text:
+                    id = id_and_text.group(1)
+                    # print("Game Creator id is:")
+                    # print(id)
+                    game_creator_id = id
+
+                # print(type(game_creator_id))
+                if game_creator_id:
+                    game = context.application.bot_data.get(int(game_creator_id))
+                    # print(game)
+                    if game:
+                        await add_player(
+                            update.callback_query.from_user.id,
+                            update.callback_query.from_user.full_name,
+                            game,
+                            context,
+                        )
+            # game = context.application.bot_data.get(update.callback_query.from_user.id)
+            # if game and update.callback_query.from_user.id == game.creator_id and game.status == Game.STATUS[3]:
+
+            #     game.player_count = 3
+
+            #     print("3 player mod activated")
 
 
 async def choose_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -443,3 +529,107 @@ async def verify_user_value(text: str) -> int | None:
     else:
         print("Not Match :(")
         return None
+
+
+async def add_player(
+    user_id: int, user_name: str, game: Game, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    # print("in add_player function")
+    if len(game.players_data) < game.player_count:
+        players_id = []
+        for player in game.players_data:
+            players_id.append(player.id)
+
+        if user_id not in players_id:
+            user_dollar = get_dollar(user_id)
+            if user_dollar and game.entry_fee <= user_dollar:
+                if update_dollar(user_id, -game.entry_fee):
+                    # player = Player(id=user_id, name=user_name, score=0, is_paid=False)
+                    game.players_data.append(
+                        Player(id=user_id, name=user_name, score=0, is_paid=True)
+                    )
+                    game.status = Game.STATUS[4]
+                    # print(
+                    #     f"this user: {user_name} added to game\n creator id: {game.creator_name}"
+                    # )
+
+                    text = generate_text_for_join_user(game)
+                    await context.bot.edit_message_text(
+                        chat_id=game.main_chat_id,
+                        message_id=game.main_message_id,
+                        text=text,
+                        reply_markup=InlineKeyboardMarkup(
+                            [
+                                [
+                                    InlineKeyboardButton(
+                                        text="🙋‍♂️شرکت میکنم🙋‍♂️",
+                                        callback_data=f"{game.creator_id}_join_game",
+                                    )
+                                ],
+                                [
+                                    InlineKeyboardButton(
+                                        text="❌", callback_data="cancel_game"
+                                    )
+                                ],
+                            ]
+                        ),
+                    )
+
+                else:
+                    pass
+                    # print("update dollar Faild :(")
+
+            else:
+                await context.bot.send_message(
+                    chat_id=game.main_chat_id,
+                    text=f"دلار شما کافی نیست\n{user_name} عزیز",
+                )
+                # print("Not enough dollar :(")
+
+        else:
+            await context.bot.send_message(
+                chat_id=game.main_chat_id,
+                text=f"{user_name} عزیز\nشما در بازی هستید لازم نیست روی شرکت کردن بزنید",
+            )
+            # print("this user is in game\n duplication error")
+
+    if len(game.players_data) == game.player_count:
+        print("\n\n***Game is RUNNIG ***\n\n")
+        pass
+        # TODO run game
+        # for run game click on start game
+
+
+def generate_text_for_join_user(game: Game) -> str:
+    # "{"+ f"player_{x+1}" + "}"
+    text_list: list[str] = [
+        f"کاربر{x+1}: " + "{" + f"player_{x+1}" + "}" + "\n"
+        for x in range(game.player_count)
+    ]
+
+    text_template = "لطفا برای این که وارد بازی شوید\nروی شرکت کردن بزنید\n\n"
+
+    result: str = ""
+
+    for text in text_list:
+        text_template += f"{text}"
+
+    result = text_template
+    # print(game.players_data)
+    for i, player in enumerate(game.players_data):
+        # print("index is: " + f"{i}")
+        result = result.replace("{player_" + f"{i+1}" + "}", player.name, 1)
+        # print("\n***\n"+ result + "\n***\n")
+
+    # print(r"\{player_\d\}")
+    find_text_list = re.findall(r"\{player_\d\}", result)
+    if find_text_list:
+        # print(find_text_list)
+        for item in find_text_list:
+            result = result.replace(item, " ")
+
+    if result == "":
+        result = "لطفا برای این که وارد بازی شوید\nروی شرکت کردن بزنید\n\nمتاسفانه در گرفتن نام شرکت کنندگان مشکلی پیش آمد"
+
+    # print(result)
+    return result
