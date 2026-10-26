@@ -18,6 +18,7 @@ from lib.game_handler import (
     initialize_game,
     game_query_handler,
     choose_price,
+    choose_winner,
 )
 from secret_key import BOT_TOKEN
 
@@ -46,6 +47,9 @@ def main():
     )
     dollarxan.add_handler(
         MessageHandler(filters.Regex(r"^(\d+k|\d+m|\d+کا|\d+ام|\d+|\d+دلار|\d+\$)$"), choose_price)
+    )
+    dollarxan.add_handler(
+        MessageHandler(filters.Dice(), choose_winner)
     )
     dollarxan.add_handler(
         MessageHandler(

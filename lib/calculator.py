@@ -73,3 +73,44 @@ def update_dollar(user_id: int, value: int) -> bool:
                 print("your price is updated")
                 return True
     return False
+
+
+# def add_game(
+#         game_type: str|None = None,
+#         creator_id: int|None = None,
+#         creator_name: str|None = None,
+#         player_count: int|None = None,
+#         players_data: list[Player]|None = None,
+#         entry_fee: int|None = None,
+#         main_chat_id: int|None = None,
+#         main_message_id: int|None = None,
+#         user_message_id: int|None = None,
+#         status: str|None = None,
+#         date: datetime|None = None
+#         ):
+    
+#         # self.type = game_type
+#         # self.player_count = player_count
+#         # self.entry_fee = entry_fee
+#         # self.main_chat_id = game_chat_id
+#         # self.main_message_id = game_message_id
+#         # self.user_message_id = user_message_id
+#         # self.creator_id = creator_id
+#         # self.creator_name = creator_name
+#         # self.players_data: list[Player] = []
+#         # self.status = Game.STATUS[0]
+#     db = Database()
+#     if db.manager is not None:
+#         id = db.manager.insert("game", {
+#             "type": game_type,
+#             "creator_id": creator_id,
+#             "creator_name": creator_name,
+#             "player_count": player_count,
+#             "players_data": players_data,
+#             "entry_fee": entry_fee,
+#             "main_chat_id": main_chat_id,
+#             "main_message_id": main_message_id,
+#             "user_message_id": user_message_id,
+#             "status": status,
+#             "create_date": date
+#         })
