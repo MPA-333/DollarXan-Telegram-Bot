@@ -4,5 +4,8 @@
 # ignore pycache
 __pycache__
 
-# my secret password, token, id, ...
+# ignore my secret password, token, id, ...
 secret_key.py
+
+# ignore testing file
+testing.py

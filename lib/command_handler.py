@@ -6,8 +6,12 @@ from telegram import (
 from telegram.ext import (
     ContextTypes,
 )
-from lib.calculator import add_dollar, get_dollar
+from lib.calculator import (
+    add_dollar,
+    get_dollar,
+)
 from secret_key import ADMIN_ID
+# =======================================================================
 
 
 async def query_handler_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -55,7 +59,6 @@ async def query_handler_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
 
 async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    
     if update.message is None:
         return None
     else:
@@ -95,7 +98,6 @@ async def help_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def generate_dollar_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-
     if update.message is not None:
         if update.message.from_user is not None:
 
@@ -147,5 +149,5 @@ async def say_goodnight_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE) 
                     reply_to_message_id=update.message.id,
                     text=f"فکر کردی کی هستی\nفقط به عشقم میگم شب بخیر\n🙂‍↔️🙂‍↔️🙂‍↔️",
                 )
-        
+    
         return None

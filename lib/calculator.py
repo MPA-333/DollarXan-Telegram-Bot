@@ -1,7 +1,6 @@
 from data.database import Database
 from datetime import datetime
-
-
+# =======================================================================
 
 
 def add_dollar(user_id: int, fname: str|None, lname: str|None, date: datetime) -> int|None:

@@ -21,9 +21,9 @@ from lib.game_handler import (
     choose_winner,
 )
 from secret_key import BOT_TOKEN
+# ===================================================================
 
 
-# =================================================================== #
 def main():
     dollarxan = (
         ApplicationBuilder()
@@ -74,11 +74,8 @@ def main():
         )
     )
     dollarxan.run_polling(allowed_updates=Update.ALL_TYPES)
-
-
 # =================================================================== #
 
 
 if __name__ == "__main__":
     main()
-    # filters.Regex("^(Boy|Girl|Other)$")

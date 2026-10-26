@@ -1,20 +1,22 @@
-from collections import defaultdict
-
 from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
 )
-from telegram.ext import (
-    ContextTypes,
+from telegram.ext import ContextTypes
+from lib.calculator import (
+    get_dollar,
+    update_dollar,
 )
-from lib.calculator import get_dollar, update_dollar
 from uuid import uuid4
 import re
+# =======================================================================
 
 
 class Player:
-    def __init__(self, id: int, name: str, score: int, is_paid: bool, is_winner: bool) -> None:
+    def __init__(
+        self, id: int, name: str, score: int, is_paid: bool, is_winner: bool
+    ) -> None:
         self.id = id
         self.name = name
         self.score = score
@@ -23,7 +25,6 @@ class Player:
 
     def __str__(self) -> str:
         return f"{self.id}|{self.name}|{self.score}|"
-
 
 
 class Game:
@@ -38,17 +39,9 @@ class Game:
         7: "End",
     }
 
-    def __init__(
-        self,
-        game_type="",
-        player_count=0,
-        entry_fee=0,
-        game_chat_id=0,
-        game_message_id=0,
-        user_message_id=0,
-        creator_id=0,
-        creator_name="",
-    ) -> None:
+    def __init__(self, game_type="", player_count=0, entry_fee=0, game_chat_id=0, game_message_id=0,
+        user_message_id=0, creator_id=0, creator_name="") -> None:
+        
         self.id = uuid4()
         self.type = game_type
         self.player_count = player_count
@@ -77,7 +70,9 @@ class Game:
         return hash(self.id)
 
     def __str__(self) -> str:
-        return f"{self.creator_id}|{self.creator_name}|{self.status}|{self.player_count}"
+        return (
+            f"{self.creator_id}|{self.creator_name}|{self.status}|{self.player_count}"
+        )
 
 
 async def expire_game(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -144,7 +139,7 @@ async def initialize_game(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
                 )
 
                 # assert context.job_queue is not None
-                context.job_queue.run_once( # type: ignore
+                context.job_queue.run_once(  # type: ignore
                     expire_game,
                     when=150,
                     data={
@@ -248,9 +243,17 @@ async def game_query_handler(
 
                 # gablan mojudi in karbar check shode va bishtar az entry_fee ast.
                 if update_dollar(update.callback_query.from_user.id, -game.entry_fee):
-                    game.players_data.append(Player(id=game.creator_id, name=game.creator_name, score=0, is_paid=True, is_winner=False))
+                    game.players_data.append(
+                        Player(
+                            id=game.creator_id,
+                            name=game.creator_name,
+                            score=0,
+                            is_paid=True,
+                            is_winner=False,
+                        )
+                    )
 
-                    context.user_data["game"] = game # type: ignore
+                    context.user_data["game"] = game  # type: ignore
                     # print(f"user: {user_id} | context: {context.user_data}")
                     game.status = Game.STATUS[4]
                 else:
@@ -263,7 +266,9 @@ async def game_query_handler(
 
                 print("1 player mod activated")
 
-                await add_player_or_run_game(game.creator_id, game.creator_name, game, context)
+                await add_player_or_run_game(
+                    game.creator_id, game.creator_name, game, context
+                )
 
         elif update.callback_query.data == "two_player_game":
             game = context.application.bot_data.get(update.callback_query.from_user.id)
@@ -279,9 +284,17 @@ async def game_query_handler(
 
                 # gablan mojudi in karbar check shode va bishtar az entry_fee ast.
                 if update_dollar(update.callback_query.from_user.id, -game.entry_fee):
-                    game.players_data.append(Player(id=game.creator_id, name=game.creator_name, score=0, is_paid=True, is_winner=False))
+                    game.players_data.append(
+                        Player(
+                            id=game.creator_id,
+                            name=game.creator_name,
+                            score=0,
+                            is_paid=True,
+                            is_winner=False,
+                        )
+                    )
 
-                    context.user_data["game"] = game # type: ignore
+                    context.user_data["game"] = game  # type: ignore
                     # print(f"user: {user_id} | context: {context.user_data}")
                     game.status = Game.STATUS[4]
                 else:
@@ -359,9 +372,17 @@ async def game_query_handler(
                 game.player_count = 3
 
                 if update_dollar(update.callback_query.from_user.id, -game.entry_fee):
-                    game.players_data.append(Player(id=game.creator_id, name=game.creator_name, score=0, is_paid=True, is_winner=False))
+                    game.players_data.append(
+                        Player(
+                            id=game.creator_id,
+                            name=game.creator_name,
+                            score=0,
+                            is_paid=True,
+                            is_winner=False,
+                        )
+                    )
 
-                    context.user_data["game"] = game # type: ignore
+                    context.user_data["game"] = game  # type: ignore
                     # print(f"user: {user_id} | context: {context.user_data}")
                     game.status = Game.STATUS[4]
                 else:
@@ -429,14 +450,15 @@ async def game_query_handler(
         elif update.callback_query.data == "run_game":
             print("\n\n***Game is RUNNIG ***\n\n")
 
-            game: Game|None = context.application.bot_data.get(update.callback_query.from_user.id)
+            game: Game | None = context.application.bot_data.get(
+                update.callback_query.from_user.id
+            )
             if (
                 game
                 and update.callback_query.from_user.id == game.creator_id
                 and game.status == Game.STATUS[5]
             ):
                 game.status = Game.STATUS[6]
-
 
                 await context.bot.edit_message_text(
                     chat_id=game.main_chat_id,
@@ -451,8 +473,7 @@ async def choose_winner(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
     if update.message and update.message.from_user and context.user_data:
 
-        game: Game|None = context.user_data.get("game")
-        
+        game: Game | None = context.user_data.get("game")
 
         if (
             game
@@ -462,36 +483,38 @@ async def choose_winner(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         ):
             print("ALL CONDITION PASSED")
 
-            print(f"user: {update.message.from_user.id} | context.user_data: {context.user_data}")
+            print(
+                f"user: {update.message.from_user.id} | context.user_data: {context.user_data}"
+            )
 
             if game.player_count > 1:
                 if game.players_data:
                     for player in game.players_data:
                         if player.id == update.message.from_user.id:
-                            
+
                             dice = update.message.dice
                             if dice and dice.emoji == "🎲":
                                 player.score = dice.value
                                 game.finished_player.append(player)
                                 game.players_data.remove(player)
                                 context.user_data.pop("game")
-                                print(f"megdar dice daruaft shod: {player.score} | user is: {update.message.from_user.full_name}\nplayer is : {player.name}")
-                            
+                                print(
+                                    f"megdar dice daruaft shod: {player.score} | user is: {update.message.from_user.full_name}\nplayer is : {player.name}"
+                                )
+
                             else:
                                 player.score = 0
                                 print("sticker dorost nist")
                 else:
                     print("list player_data is [] -> empty")
-                
 
             if game.player_count == 1:
                 pass
                 # TODO halat single player
                 # garar ast khode robat tas bendazad va natije ba robat sanjesh mishavad.
 
-
             if game.player_count == len(game.finished_player):
-                
+
                 # is_tie, reward, winners = calculate_winner(game)
 
                 text = generate_text_for_show_winners(game, *calculate_winner(game))
@@ -505,7 +528,7 @@ async def choose_winner(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
                 # if is_tie:
                 #     result = f"😎بازی مساوی شد😎" + "\n\nامتیازات:\n" + text + "\n\nپولتون رو خوردم🙂‍↔️"
-                
+
                 # elif not is_tie and len(winners) == 1:
                 #     result = f"\u200F{winners[0]} برنده شد💙" + "\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
                 # elif not is_tie and len(winners) > 1:
@@ -531,7 +554,7 @@ async def choose_winner(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
                 # context.application.bot_data.pop(game.creator_id)
                 # del game
-                       
+
 
 async def choose_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print("CHOOSE PRICE Entierd")
@@ -673,14 +696,20 @@ async def add_player_or_run_game(
                 if update_dollar(user_id, -game.entry_fee):
                     # player = Player(id=user_id, name=user_name, score=0, is_paid=False)
                     game.players_data.append(
-                        Player(id=user_id, name=user_name, score=0, is_paid=True, is_winner=False)
+                        Player(
+                            id=user_id,
+                            name=user_name,
+                            score=0,
+                            is_paid=True,
+                            is_winner=False,
+                        )
                     )
                     game.status = Game.STATUS[4]
                     # print(
                     #     f"this user: {user_name} added to game\n creator id: {game.creator_name}"
                     # )
 
-                    context.user_data["game"] = game # type: ignore
+                    context.user_data["game"] = game  # type: ignore
                     # print(f"user: {user_id} | context: {context.user_data}")
 
                     text = generate_text_for_join_user(game)
@@ -712,7 +741,7 @@ async def add_player_or_run_game(
             else:
                 await context.bot.send_message(
                     chat_id=game.main_chat_id,
-                    text=f"دلار شما کافی نیست\n\u200F{user_name} عزیز",
+                    text=f"دلار شما کافی نیست\n\u200f{user_name} عزیز",
                 )
                 # print("Not enough dollar :(")
 
@@ -761,11 +790,7 @@ async def add_player_or_run_game(
                             callback_data=f"run_game",
                         )
                     ],
-                    [
-                        InlineKeyboardButton(
-                            text="❌", callback_data="cancel_game"
-                        )
-                    ],
+                    [InlineKeyboardButton(text="❌", callback_data="cancel_game")],
                 ]
             ),
         )
@@ -775,10 +800,10 @@ def generate_text_for_run_game(game: Game) -> str:
     """in tabe yek object az noe Game migirad
     barhasb tedad player taiin shode dar game
     matn mored nazar ra misazad va barmigardanad
-    
+
     Args:
         game (Game): yek object az noe Game
-    
+
     Returns:
         str: matne sakhte shode motanaseb ba tedad bazikon
     """
@@ -799,7 +824,7 @@ def generate_text_for_run_game(game: Game) -> str:
         # print("index is: " + f"{i}")
         result = result.replace("{player_" + f"{i+1}" + "}", player.name, 1)
 
-    result += f"\n\nبرای شروع بازی روی شروع بزن\n\u200F{game.creator_name} جان"
+    result += f"\n\nبرای شروع بازی روی شروع بزن\n\u200f{game.creator_name} جان"
 
     find_text_list = re.findall(r"\{player_\d\}", result)
     if find_text_list:
@@ -853,30 +878,45 @@ def generate_text_for_join_user(game: Game) -> str:
     return result
 
 
-def generate_text_for_show_winners(game: Game, is_tie: bool, reward: int, winners: list[Player]) -> str:
+def generate_text_for_show_winners(
+    game: Game, is_tie: bool, reward: int, winners: list[Player]
+) -> str:
     text = ""
     text_list: list[str] = [
-        f"\u200Fامتیاز \u200F{player.name}: \u200F{player.score}" + "\n"
+        f"\u200fامتیاز \u200f{player.name}: \u200f{player.score}" + "\n"
         for player in game.finished_player
     ]
     for t in text_list:
         text += f"{t}"
 
     if is_tie:
-        result = f"😎بازی مساوی شد😎" + "\n\nامتیازات:\n" + text + "\n\nپولتون رو خوردم🙂‍↔️"
-    
+        result = (
+            f"😎بازی مساوی شد😎" + "\n\nامتیازات:\n" + text + "\n\nپولتون رو خوردم🙂‍↔️"
+        )
+
     elif not is_tie and len(winners) == 1:
-        result = f"\u200F{winners[0].name} برنده شد💙" + "\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
+        result = (
+            f"\u200f{winners[0].name} برنده شد💙"
+            + "\n\nامتیازات:\n"
+            + text
+            + f"\nمبلغ {reward}دلار به برنده واریز شد"
+        )
     elif not is_tie and len(winners) > 1:
         names = ""
-        winner_names: list[str] = [f"\u200F{player.name} " for player in winners]
+        winner_names: list[str] = [f"\u200f{player.name} " for player in winners]
         for i, t in enumerate(winner_names, 1):
             if i == len(winner_names):
                 names += f"{t}"
             else:
                 names += f"{t}" + "و"
 
-        result = names + "برنده شدند💙" +"\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
+        result = (
+            names
+            + "برنده شدند💙"
+            + "\n\nامتیازات:\n"
+            + text
+            + f"\nمبلغ {reward}دلار به برنده واریز شد"
+        )
     else:
         result = "مشکلی پیش آمد، نمیتوانم دقیق مشخص کنم چه کسی برنده شد و چه مقدار پول دریافت کرد"
 
@@ -916,6 +956,3 @@ def calculate_winner(game: Game) -> tuple[bool, int, list[Player]]:
         update_dollar(player.id, reward)
 
     return is_tie, reward, winners
-
-    
-
