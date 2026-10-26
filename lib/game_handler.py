@@ -866,7 +866,7 @@ def generate_text_for_show_winners(game: Game, is_tie: bool, reward: int, winner
         result = f"😎بازی مساوی شد😎" + "\n\nامتیازات:\n" + text + "\n\nپولتون رو خوردم🙂‍↔️"
     
     elif not is_tie and len(winners) == 1:
-        result = f"\u200F{winners[0]} برنده شد💙" + "\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
+        result = f"\u200F{winners[0].name} برنده شد💙" + "\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
     elif not is_tie and len(winners) > 1:
         names = ""
         winner_names: list[str] = [f"\u200F{player.name} " for player in winners]
