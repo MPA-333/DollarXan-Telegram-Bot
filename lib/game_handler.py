@@ -492,51 +492,46 @@ async def choose_winner(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
             if game.player_count == len(game.finished_player):
                 
-                high_score = 0
-                winner = ""
-                is_tie = False
+                # is_tie, reward, winners = calculate_winner(game)
 
-                for player in game.finished_player:
-                    if player.score > high_score:
-                        high_score = player.score
-                        winner = player.name
-                        is_tie = False
-                        update_dollar(player.id, game.entry_fee * game.player_count)
-                        # player.is_winner = True
-                    elif player.score != 0 and player.score == high_score:
-                        winner += " - " + player.name
-                        is_tie = True
-                        # player.is_winner = True
+                text = generate_text_for_show_winners(game, *calculate_winner(game))
+                # text = ""
+                # text_list: list[str] = [
+                #     f"\u200Fامتیاز \u200F{player.name}: \u200F{player.score}" + "\n"
+                #     for player in game.finished_player
+                # ]
+                # for t in text_list:
+                #     text += f"{t}"
 
+                # if is_tie:
+                #     result = f"😎بازی مساوی شد😎" + "\n\nامتیازات:\n" + text + "\n\nپولتون رو خوردم🙂‍↔️"
+                
+                # elif not is_tie and len(winners) == 1:
+                #     result = f"\u200F{winners[0]} برنده شد💙" + "\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
+                # elif not is_tie and len(winners) > 1:
+                #     names = ""
+                #     winner_names: list[str] = [f"\u200F{player.name} " for player in winners]
+                #     for i, t in enumerate(winner_names, 1):
+                #         if i == len(winner_names):
+                #             names += f"{t}"
+                #         else:
+                #             names += f"{t}" + "و"
 
-                text = ""
-                text_list: list[str] = [
-                    f"\u200Fامتیاز \u200F{player.name}: \u200F{player.score}" + "\n"
-                    for player in game.finished_player
-                ]
-                for t in text_list:
-                    text += f"{t}"
-
-                if is_tie:
-                    result = f"😎بازی مساوی شد😎" + "\n\nامتیازات:\n" + text
-                else:
-                    result = f"\u200F{winner} برنده شد💙" + "\n\nامتیازات:\n" + text + f"\nمبلغ {game.entry_fee * game.player_count}دلار به برنده واریز شد"
+                #     result = names + "برنده شدند💙" +"\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
+                # else:
+                #     result = "مشکلی پیش آمد، نمیتوانم دقیق مشخص کنم چه کسی برنده شد و چه مقدار پول دریافت کرد"
 
                 await context.bot.edit_message_text(
                     chat_id=game.main_chat_id,
                     message_id=game.main_message_id,
-                    text=result,
+                    text=text,
                 )
 
                 print("Finishing game")
 
                 # context.application.bot_data.pop(game.creator_id)
                 # del game
-
-                
-
-             
-
+                       
 
 async def choose_price(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print("CHOOSE PRICE Entierd")
@@ -856,3 +851,71 @@ def generate_text_for_join_user(game: Game) -> str:
 
     # print(result)
     return result
+
+
+def generate_text_for_show_winners(game: Game, is_tie: bool, reward: int, winners: list[Player]) -> str:
+    text = ""
+    text_list: list[str] = [
+        f"\u200Fامتیاز \u200F{player.name}: \u200F{player.score}" + "\n"
+        for player in game.finished_player
+    ]
+    for t in text_list:
+        text += f"{t}"
+
+    if is_tie:
+        result = f"😎بازی مساوی شد😎" + "\n\nامتیازات:\n" + text + "\n\nپولتون رو خوردم🙂‍↔️"
+    
+    elif not is_tie and len(winners) == 1:
+        result = f"\u200F{winners[0]} برنده شد💙" + "\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
+    elif not is_tie and len(winners) > 1:
+        names = ""
+        winner_names: list[str] = [f"\u200F{player.name} " for player in winners]
+        for i, t in enumerate(winner_names, 1):
+            if i == len(winner_names):
+                names += f"{t}"
+            else:
+                names += f"{t}" + "و"
+
+        result = names + "برنده شدند💙" +"\n\nامتیازات:\n" + text + f"\nمبلغ {reward}دلار به برنده واریز شد"
+    else:
+        result = "مشکلی پیش آمد، نمیتوانم دقیق مشخص کنم چه کسی برنده شد و چه مقدار پول دریافت کرد"
+
+    return result
+
+
+def calculate_winner(game: Game) -> tuple[bool, int, list[Player]]:
+    is_tie = False
+    reward: int = int(game.entry_fee * game.player_count)
+    # ===============================
+    scores = []
+
+    for player in game.finished_player:
+        scores.append(player.score)
+
+    print("scores is:", scores)
+    high_score = max(scores)
+    print("high score is:", high_score)
+
+    winners: list[Player] = []
+    for player in game.finished_player:
+        if player.score == high_score:
+            player.is_winner = True
+            winners.append(player)
+
+    if len(winners) == game.player_count:
+        is_tie = True
+        reward = 0
+    elif len(winners) < game.player_count:
+        is_tie = False
+        reward = int(reward / len(winners))
+    else:
+        print("Error calculate winner!")
+        reward = 0
+
+    for player in winners:
+        update_dollar(player.id, reward)
+
+    return is_tie, reward, winners
+
+    
+
