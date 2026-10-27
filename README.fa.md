@@ -23,5 +23,7 @@
 - نیاز است تا یک فایل دقیقا با نام secret\_key.py و دقیقا در کنار فایل master.py بسازید و داخلش دو خط زیر را قرار دهید :
 
 secret\_key.py:
+
     BOT\_TOKEN = "your bot token"  
+    
     ADMIN\_ID = 1111111111

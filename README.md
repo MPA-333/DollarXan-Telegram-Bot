@@ -21,7 +21,9 @@ Currently, this bot isn't running on a dedicated server; it was only active for 
 - You need to create a file named exactly \`secret\_key.py\` right next to the \`master.py\` file, and include the following two lines inside it:
 
 secret\_key.py:
-    BOT\_TOKEN = "your bot token"  
+
+    BOT\_TOKEN = "your bot token"
+
     ADMIN\_ID = 1111111111
 
 
