@@ -8,4 +8,7 @@ __pycache__
 secret_key.py
 
 # ignore testing file
-testing.py
+for_test.py
+
+# ignore .bak file
+*.bak
