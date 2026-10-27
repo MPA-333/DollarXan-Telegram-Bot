@@ -31,7 +31,7 @@ def add_dollar(user_id: int, fname: str|None, lname: str|None, date: datetime) -
                 "user_id": user_id,
                 "first_name": fname,
                 "last_name": lname,
-                "dollar": 1,
+                "dollar": 3,
                 "last_dollar_gen_date": date,
             })
 
