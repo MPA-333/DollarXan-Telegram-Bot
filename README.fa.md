@@ -24,6 +24,6 @@
 
 secret\_key.py:
 
-    BOT\_TOKEN = "your bot token"  
-    
-    ADMIN\_ID = 1111111111
+    BOT_TOKEN = "your bot token"  
+
+    ADMIN_ID = 1111111111

@@ -22,9 +22,9 @@ Currently, this bot isn't running on a dedicated server; it was only active for 
 
 secret\_key.py:
 
-    BOT\_TOKEN = "your bot token"
+    BOT_TOKEN = "your bot token"
 
-    ADMIN\_ID = 1111111111
+    ADMIN_ID = 1111111111
 
 
 translate by:  google translate
